@@ -1,0 +1,32 @@
+name: 自动更新仓库
+on:
+  schedule:
+    # 使用 cron 语法，这里表示每周日 00:00 (UTC) 触发
+    - cron: '0 0 * * 0'
+  # 允许手动触发，方便测试
+  workflow_dispatch:
+
+jobs:
+  update-job:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # 1. 检出你的仓库代码
+      - uses: actions/checkout@v4
+      
+      # 2. 执行你的更新脚本 (可以是Python, Shell等)
+      - name: 运行更新脚本
+        run: |
+          # 在这里写你的更新逻辑，比如用Python脚本修改文件
+          python your_update_script.py
+          
+      # 3. 提交并推送更改
+      - name: 提交更改
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          # 如果没有变化则不提交
+          git diff --staged --quiet || git commit -m "chore: 自动更新仓库内容 [skip ci]"
+          git push
